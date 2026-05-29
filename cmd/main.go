@@ -27,12 +27,12 @@ func main() {
 
 	cmd := &cli.Command{
 		Name:  "git-trash",
-		Usage: "Moves branches to a trash bin by simply append a prefix that marks them for deletion",
+		Usage: "Moves branches to a trash bin by moving targeted branches for trash by adding a prefix (" + TrashPrefix + "). Perfect for large git projects that handle many branches",
 		Commands: []*cli.Command{
 			{
 				Name:    "trash",
 				Aliases: []string{"t"},
-				Usage:   "renames branch to trash prefix by matching the branch name",
+				Usage:   "Moves targeted branch(es) to trash bin. This also accepts glob characters such as * and ?.",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					return trash.ByMatch(ctx, git, getLastArg(cmd.Args()), ProtectedBranches, TrashPrefix)
 				},
@@ -40,7 +40,7 @@ func main() {
 			{
 				Name:    "days",
 				Aliases: []string{"d"},
-				Usage:   "moves branches to trash bin by number of days",
+				Usage:   "Moves branches older then the number of days provided to the trash bin.",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					days, err := strconv.Atoi(getLastArg(cmd.Args()))
 					if err != nil {
@@ -52,9 +52,29 @@ func main() {
 			{
 				Name:    "empty",
 				Aliases: []string{"e"},
-				Usage:   "git branch -D branches with trash bin prefix",
+				Usage:   "Emptys the trash bin",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
 					return empty.All(ctx, git, TrashPrefix)
+				},
+			},
+			{
+				Name:    "info",
+				Aliases: []string{"i"},
+				Usage:   "Shows licensing, download, and issue reporting information.",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					fmt.Printf("git-trash %s (commit %s, built %s)\n\n", Version, Commit, Date)
+					fmt.Println("License:")
+					fmt.Println("  Licensed under the GNU General Public License v3.0 (GPL-3.0).")
+					fmt.Println("  This program comes with ABSOLUTELY NO WARRANTY. It is free software,")
+					fmt.Println("  and you are welcome to redistribute it under certain conditions.")
+					fmt.Println("  See https://www.gnu.org/licenses/gpl-3.0.html for the full text.")
+					fmt.Println()
+					fmt.Println("Download / Source:")
+					fmt.Println("  https://github.com/ajm113/git-trash")
+					fmt.Println()
+					fmt.Println("Report Issues:")
+					fmt.Println("  https://github.com/ajm113/git-trash/issues")
+					return nil
 				},
 			},
 		},
