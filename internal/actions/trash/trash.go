@@ -44,7 +44,7 @@ func ByMatch(ctx context.Context, git git.Git, match string, protectedBranches [
 		}
 	}
 
-	return moveBranchesToTrash(git, branchesToTrash, trashPrefix)
+	return moveBranchesToTrash(git, branches, branchesToTrash, trashPrefix)
 }
 
 func ByDays(ctx context.Context, git git.Git, days int, protectedBranches []string, trashPrefix string) error {
@@ -83,16 +83,23 @@ func ByDays(ctx context.Context, git git.Git, days int, protectedBranches []stri
 		}
 	}
 
-	return moveBranchesToTrash(git, branchesToTrash, trashPrefix)
+	return moveBranchesToTrash(git, branches, branchesToTrash, trashPrefix)
 }
 
-func moveBranchesToTrash(git git.Git, branches []string, trashPrefix string) error {
-	if len(branches) == 0 {
+func moveBranchesToTrash(git git.Git, currentBranches, branchesToTrash []string, trashPrefix string) error {
+	if len(branchesToTrash) == 0 {
 		fmt.Println("warn: no branches to move to trash")
 		return nil
 	}
 
-	for b := range slices.Values(branches) {
+	for b := range slices.Values(branchesToTrash) {
+
+		// make sure we won't have a collision first.
+		if slices.Contains(currentBranches, trashPrefix+b) {
+			fmt.Printf("warn: [%s] would result in a conflict if moved to trash bin. Please rename branch with trash prefix or change the current branch name!\n", b)
+			continue
+		}
+
 		err := git.MoveBranch(b, trashPrefix+b)
 		if err != nil {
 			fmt.Printf("error: [%s] failed moving branch: %s\n", b, err.Error())
