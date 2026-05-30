@@ -48,6 +48,12 @@ func ByMatch(ctx context.Context, git git.Git, match string, protectedBranches [
 }
 
 func ByDays(ctx context.Context, git git.Git, days int, protectedBranches []string, trashPrefix string) error {
+	if days <= 0 {
+		err := ErrInvalidDayCount
+		fmt.Println("error: " + err.Error())
+		return err
+	}
+
 	branches, err := git.Branches()
 	if err != nil {
 		fmt.Println("error:" + err.Error())
